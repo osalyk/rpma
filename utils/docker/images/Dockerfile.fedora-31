@@ -46,7 +46,9 @@ ENV PMDK_DEPS "\
 # RPMA deps
 ENV RPMA_DEPS "\
 	cmake \
-	doxygen \
+	curl \
+	txt2man \
+	groff \
 	graphviz \
 	libunwind-devel \
 	rdma-core-devel"
