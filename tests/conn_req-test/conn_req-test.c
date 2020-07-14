@@ -15,7 +15,7 @@
 #include "rpma_err.h"
 
 #define MOCK_IP_ADDRESS		"127.0.0.1"
-#define MOCK_SERVICE		"1234" /* a random port number */
+#define MOCK_SERVICE		"1234"
 
 /* random values */
 #define MOCK_VERBS		(struct ibv_context *)0x4E4B

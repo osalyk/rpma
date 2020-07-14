@@ -10,12 +10,12 @@ ignore:
 comment:
   layout: "diff"
   behavior: default
-  require_changes: yes
+  require_changes: true
 
 parsers:
   gcov:
     branch_detection:
-      conditional: false
-      loop: false
-      method: false
-      macro: false
+      conditional: no
+      loop: no
+      method: no
+      macro: no
