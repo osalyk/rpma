@@ -10,8 +10,10 @@
 #include "mr-common.h"
 #include "test-common.h"
 
-const rpma_mr_descriptor Desc_exp_pmem = DESC_EXP_PMEM;
-const rpma_mr_descriptor Desc_exp_dram = DESC_EXP_DRAM;
+void *Desc_exp_pmem;
+void *Desc_exp_dram;
+static const uint8_t array_pmem[DESC_EXP_SIZE] = DESC_EXP_PMEM;
+// const uint8_t array_dram[DESC_EXP_SIZE] = DESC_EXP_DRAM;
 
 /* common setups & teardowns */
 
@@ -142,7 +144,17 @@ setup__mr_remote(void **mr_ptr)
 	 * create a remote memory structure based on a pre-prepared descriptor
 	 */
 	struct rpma_mr_remote *mr = NULL;
-	int ret = rpma_mr_remote_from_descriptor(&Desc_exp_pmem, &mr);
+	void *Desc_exp_pmem = malloc(DESC_EXP_SIZE);
+	char *buff = Desc_exp_pmem;
+	for (int i = 0; i < DESC_EXP_SIZE; i++, buff += sizeof(uint8_t)) {
+		memcpy(buff, &array_pmem[i], sizeof(uint8_t));
+	}
+//	char *buff_2 = Desc_exp_dram;
+//	for (int i = 0; i < DESC_EXP_SIZE; i++, buff_2 += sizeof(uint8_t)) {
+//		memcpy(buff_2, &array_dram[i], sizeof(uint8_t));
+//	}
+	int ret = rpma_mr_remote_from_descriptor(Desc_exp_pmem,
+			DESC_EXP_SIZE, &mr);
 
 	/* verify the results */
 	assert_int_equal(ret, MOCK_OK);

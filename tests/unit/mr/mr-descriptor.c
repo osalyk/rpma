@@ -18,8 +18,6 @@
 #include "mr-common.h"
 #include "test-common.h"
 
-#define MR_DESC_SIZE sizeof(rpma_mr_descriptor)
-
 /* rpma_mr_get_descriptor() unit test */
 
 /*
@@ -28,7 +26,7 @@
 static void
 get_descriptor__mr_NULL(void **unused)
 {
-	rpma_mr_descriptor desc = {{0}};
+	void *desc = 0;
 
 	/* run test */
 	int ret = rpma_mr_get_descriptor(NULL, &desc);
@@ -75,7 +73,7 @@ remote_from_descriptor__desc_NULL(void **unused)
 {
 	/* run test */
 	struct rpma_mr_remote *mr = NULL;
-	int ret = rpma_mr_remote_from_descriptor(NULL, &mr);
+	int ret = rpma_mr_remote_from_descriptor(NULL, DESC_EXP_SIZE, &mr);
 
 	/* verify the results */
 	assert_int_equal(ret, RPMA_E_INVAL);
@@ -89,7 +87,8 @@ static void
 remote_from_descriptor__mr_ptr_NULL(void **unused)
 {
 	/* run test */
-	int ret = rpma_mr_remote_from_descriptor(&Desc_exp_pmem, NULL);
+	int ret = rpma_mr_remote_from_descriptor(&Desc_exp_pmem,
+			DESC_EXP_SIZE, NULL);
 
 	/* verify the results */
 	assert_int_equal(ret, RPMA_E_INVAL);
@@ -103,7 +102,7 @@ static void
 remote_from_descriptor__mr_ptr_NULL_desc_NULL(void **unused)
 {
 	/* run test */
-	int ret = rpma_mr_remote_from_descriptor(NULL, NULL);
+	int ret = rpma_mr_remote_from_descriptor(NULL, DESC_EXP_SIZE, NULL);
 
 	/* verify the results */
 	assert_int_equal(ret, RPMA_E_INVAL);
@@ -120,7 +119,8 @@ remote_from_descriptor__malloc_ENOMEM(void **unused)
 
 	/* run test */
 	struct rpma_mr_remote *mr = NULL;
-	int ret = rpma_mr_remote_from_descriptor(&Desc_exp_pmem, &mr);
+	int ret = rpma_mr_remote_from_descriptor(&Desc_exp_pmem,
+			DESC_EXP_SIZE, &mr);
 
 	/* verify the results */
 	assert_int_equal(ret, RPMA_E_NOMEM);
@@ -133,19 +133,25 @@ remote_from_descriptor__malloc_ENOMEM(void **unused)
 static void
 remote_from_descriptor__buff_plt_invalid(void **unused)
 {
-	rpma_mr_descriptor desc_invalid = {{0}};
-	memset(&desc_invalid, 0xff, sizeof(rpma_mr_descriptor));
+	uint8_t array[3] = {1, 2, 3};
+	void *desc_invalid = malloc(sizeof(array));
+	char *buff = desc_invalid;
+	for (int i = 0; i < 3; i++, buff += sizeof(uint8_t)) {
+		memcpy(buff, &array[i], sizeof(uint8_t));
+	}
 
 	/* configure mock */
 	will_return_maybe(__wrap__test_malloc, MOCK_OK);
 
 	/* run test */
 	struct rpma_mr_remote *mr = NULL;
-	int ret = rpma_mr_remote_from_descriptor(&desc_invalid, &mr);
+	int ret = rpma_mr_remote_from_descriptor(&desc_invalid,
+			DESC_EXP_SIZE, &mr);
 
 	/* verify the results */
 	assert_int_equal(ret, RPMA_E_INVAL);
 	assert_null(mr);
+	free(desc_invalid);
 }
 
 /* rpma_mr_remote_delete() unit test */
@@ -252,31 +258,31 @@ get_descriptor__desc_alignment(void **pprestate)
 	struct prestate *prestate = *pprestate;
 	struct rpma_mr_local *mr = prestate->mr;
 
-	char buff_base[MR_DESC_SIZE * 2];
-	char pattern[MR_DESC_SIZE * 2];
-	memset(pattern, 0xff, MR_DESC_SIZE * 2);
-	rpma_mr_descriptor *desc = NULL;
+	char buff_base[DESC_EXP_SIZE * 2];
+	char pattern[DESC_EXP_SIZE * 2];
+	memset(pattern, 0xff, DESC_EXP_SIZE * 2);
+	void *desc = NULL;
 	int ret = 0;
 
 	/*
 	 * Generate a miscellaneous output descriptor alignment just to be sure
 	 * the implementation does not prefer certain alignments.
 	 */
-	for (uintptr_t i = 0; i < MR_DESC_SIZE; ++i) {
-		memset(buff_base, 0xff, MR_DESC_SIZE * 2);
+	for (uintptr_t i = 0; i < DESC_EXP_SIZE; ++i) {
+		memset(buff_base, 0xff, DESC_EXP_SIZE * 2);
 
 		/* run test */
-		desc = (rpma_mr_descriptor *)(buff_base + i);
+		desc = (void *)(buff_base + i);
 		ret = rpma_mr_get_descriptor(mr, desc);
 
 		/* verify the results */
 		assert_int_equal(ret, 0);
-		assert_memory_equal(desc, &Desc_exp_pmem, MR_DESC_SIZE);
+		assert_memory_equal(desc, &Desc_exp_pmem, DESC_EXP_SIZE);
 		assert_memory_equal(buff_base, pattern, i);
 		assert_memory_equal(
-				buff_base + i + MR_DESC_SIZE,
-				pattern + i + MR_DESC_SIZE,
-				MR_DESC_SIZE - i);
+				buff_base + i + DESC_EXP_SIZE,
+				pattern + i + DESC_EXP_SIZE,
+				DESC_EXP_SIZE - i);
 	}
 }
 
@@ -289,11 +295,11 @@ get_descriptor__desc_alignment(void **pprestate)
 static void
 remote_from_descriptor__desc_alignment(void **unused)
 {
-	char buff_base[MR_DESC_SIZE * 2];
-	char pattern[MR_DESC_SIZE * 2];
-	memset(pattern, 0xff, MR_DESC_SIZE * 2);
+	char buff_base[DESC_EXP_SIZE * 2];
+	char pattern[DESC_EXP_SIZE * 2];
+	memset(pattern, 0xff, DESC_EXP_SIZE * 2);
 
-	rpma_mr_descriptor *desc = NULL;
+	void *desc = NULL;
 	struct rpma_mr_remote *mr = NULL;
 	size_t size = 0;
 	int ret = 0;
@@ -305,17 +311,17 @@ remote_from_descriptor__desc_alignment(void **unused)
 	 * Generate a miscellaneous input descriptor alignment just to be sure
 	 * the implementation does not prefer certain alignments.
 	 */
-	for (uintptr_t i = 0; i < MR_DESC_SIZE; ++i) {
-		memset(buff_base, 0xff, MR_DESC_SIZE * 2);
+	for (uintptr_t i = 0; i < DESC_EXP_SIZE; ++i) {
+		memset(buff_base, 0xff, DESC_EXP_SIZE * 2);
 
 		/* prepare a buffer contents */
-		desc = (rpma_mr_descriptor *)(buff_base + i);
-		const rpma_mr_descriptor *desc_src = (i % 2) ?
+		desc = (void *)(buff_base + i);
+		const void *desc_src = (i % 2) ?
 				&Desc_exp_pmem : &Desc_exp_dram;
-		memcpy(desc, desc_src, MR_DESC_SIZE);
+		memcpy(desc, desc_src, DESC_EXP_SIZE);
 
 		/* run test */
-		ret = rpma_mr_remote_from_descriptor(desc, &mr);
+		ret = rpma_mr_remote_from_descriptor(desc, DESC_EXP_SIZE, &mr);
 
 		/* verify the results */
 		assert_int_equal(ret, MOCK_OK);
