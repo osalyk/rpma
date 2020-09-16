@@ -216,7 +216,7 @@ main(int argc, char *argv[])
 	dst_offset = dst_data->data_offset;
 
 	dst_data->mr_desc = malloc(dst_data->desc_size);
-	if (&dst_data->mr_desc == NULL)
+	if (dst_data->mr_desc == NULL)
 		goto err_mr_dereg;
 
 	ret = rpma_mr_remote_from_descriptor(&dst_data->mr_desc,
