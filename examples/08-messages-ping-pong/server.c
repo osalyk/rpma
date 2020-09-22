@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <infiniband/verbs.h>
 
 #define USAGE_STR "usage: %s <server_address> <port>\n"
 
@@ -32,6 +33,8 @@ main(int argc, char *argv[])
 	/* configure logging thresholds to see more details */
 	rpma_log_set_threshold(RPMA_LOG_THRESHOLD, RPMA_LOG_LEVEL_INFO);
 	rpma_log_set_threshold(RPMA_LOG_THRESHOLD_AUX, RPMA_LOG_LEVEL_INFO);
+
+	ibv_fork_init();
 
 	/* read common parameters */
 	char *addr = argv[1];
@@ -80,7 +83,7 @@ main(int argc, char *argv[])
 	/* receive an incoming connection request */
 	if ((ret = rpma_ep_next_conn_req(ep, NULL, &req)))
 		goto err_mr_dereg;
-
+	exit(-1);
 	/*
 	 * Put an initial receive to be prepared for the first message of
 	 * the client's ping-pong.
@@ -174,6 +177,8 @@ main(int argc, char *argv[])
 		/* reset */
 		send_cmpl = 0;
 		recv_cmpl = 0;
+		if (*send == 10)
+			return -1;
 	}
 
 err_conn_disconnect:

@@ -59,9 +59,10 @@ function run_example() {
 		;;
 	08-messages-ping-pong)
 		SEED=7
-		ROUNDS=3
+		ROUNDS=10
+		SLEEP=100
 		echo "Starting the client ..."
-		$DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
+		$DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS $SLEEP 
 		RV=$?
 		;;
 	*)
