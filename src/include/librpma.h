@@ -1357,7 +1357,7 @@ const char *rpma_err_2str(int ret);
  * are used in logging API calls to indicate logging message severity.
  * Log levels are also used to define thresholds for logging.
  */
-typedef enum {
+enum rpma_log_level {
 	/* all messages will be suppressed */
 	RPMA_LOG_DISABLED = -1,
 	/* an error that causes the library to stop working immediately */
@@ -1375,9 +1375,9 @@ typedef enum {
 	RPMA_LOG_LEVEL_INFO,
 	/* debug info e.g. write operation dump */
 	RPMA_LOG_LEVEL_DEBUG,
-} rpma_log_level;
+};
 
-typedef enum {
+enum rpma_log_threshold {
 	/*
 	 * the main threshold level - the logging messages above this level
 	 * won't trigger the logging functions
@@ -1389,7 +1389,7 @@ typedef enum {
 	 */
 	RPMA_LOG_THRESHOLD_AUX,
 	RPMA_LOG_THRESHOLD_MAX
-} rpma_log_threshold;
+};
 
 /** 3
  * rpma_log_set_threshold - set the logging threshold level
@@ -1398,7 +1398,15 @@ typedef enum {
  *
  *	#include <librpma.h>
  *
- *	typedef enum {
+ *	int rpma_log_set_threshold(enum rpma_log_threshold threshold,
+ *			enum rpma_log_level level);
+ *
+ *	enum rpma_log_threshold {
+ *		RPMA_LOG_THRESHOLD,
+ *		RPMA_LOG_THRESHOLD_AUX,
+ *		RPMA_LOG_THRESHOLD_MAX
+ *	};
+ *	enum rpma_log_level {
  *		RPMA_LOG_DISABLED,
  *		RPMA_LOG_LEVEL_FATAL,
  *		RPMA_LOG_LEVEL_ERROR,
@@ -1406,16 +1414,7 @@ typedef enum {
  *		RPMA_LOG_LEVEL_NOTICE,
  *		RPMA_LOG_LEVEL_INFO,
  *		RPMA_LOG_LEVEL_DEBUG,
- *	} rpma_log_level;
- *
- *	typedef enum {
- *		RPMA_LOG_THRESHOLD,
- *		RPMA_LOG_THRESHOLD_AUX,
- *		RPMA_LOG_THRESHOLD_MAX
- *	} rpma_log_threshold;
- *
- *	int rpma_log_set_threshold(rpma_threshold threshold,
- *			rpma_log_level level);
+ *	};
  *
  * DESCRIPTION
  * rpma_log_set_threshold() sets the logging threshold level.
@@ -1458,7 +1457,8 @@ typedef enum {
  * RPMA_LOG_THRESHOLD_AUX
  * - RPMA_E_INVAL - level is not a value defined by rpma_log_level type
  */
-int rpma_log_set_threshold(rpma_log_threshold threshold, rpma_log_level level);
+int rpma_log_set_threshold(enum rpma_log_threshold threshold,
+		enum rpma_log_level level);
 
 /** 3
  * rpma_log_get_threshold - get the logging threshold level
@@ -1467,8 +1467,8 @@ int rpma_log_set_threshold(rpma_log_threshold threshold, rpma_log_level level);
  *
  *	#include <librpma.h>
  *
- *	int rpma_log_get_threshold(rpma_threshold threshold,
- *			rpma_log_level *level);
+ *	int rpma_log_get_threshold(enum rpma_log_threshold threshold,
+ *			enum rpma_log_level *level);
  *
  * DESCRIPTION
  * rpma_log_get_threshold() gets the current level of the threshold.
@@ -1484,14 +1484,15 @@ int rpma_log_set_threshold(rpma_log_threshold threshold, rpma_log_level level);
  * RPMA_LOG_THRESHOLD_AUX
  * - RPMA_E_INVAL - *level is NULL
  */
-int rpma_log_get_threshold(rpma_log_threshold threshold, rpma_log_level *level);
+int rpma_log_get_threshold(enum rpma_log_threshold threshold,
+		enum rpma_log_level *level);
 
 /*
  * the type used for defining logging functions
  */
 typedef void log_function(
 	/* the log level of the message */
-	rpma_log_level level,
+	enum rpma_log_level level,
 	/* name of the source file where the message coming from */
 	const char *file_name,
 	/* the source file line where the message coming from */
