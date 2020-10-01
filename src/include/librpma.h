@@ -22,10 +22,10 @@
  * librpma - remote persistent memory access library
  *
  * SYNOPSIS
- *
+ * \f[C]
  *	#include <librpma.h>
  *	cc ... -lrpma
- *
+ * \f[R]
  * DESCRIPTION
  *
  * librpma is a C library to simplify accessing persistent memory (PMem) devices
