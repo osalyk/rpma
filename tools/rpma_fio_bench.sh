@@ -304,7 +304,7 @@ all)
 	usage "Wrong persistency mode: $P_MODES"
 	;;
 esac
-
+echo $OPS
 case $OPS in
 read|write|rw|randrw)
 	;;
@@ -326,7 +326,7 @@ all)
 	usage "Wrong mode: $MODES"
 	;;
 esac
-
+echo $OPS
 for p in $P_MODES; do
 	for o in $OPS; do
 		for m in $MODES; do
