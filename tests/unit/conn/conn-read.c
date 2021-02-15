@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * conn-read.c -- the rpma_read() unit tests
@@ -53,7 +53,6 @@ read__src_NULL(void **unused)
 				NULL, MOCK_REMOTE_OFFSET,
 				MOCK_LEN, MOCK_FLAGS, MOCK_OP_CONTEXT);
 
-	/* verify the results */
 	assert_int_equal(ret, RPMA_E_INVAL);
 }
 
